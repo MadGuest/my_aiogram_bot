@@ -1,3 +1,5 @@
+# Обработчик диалога добавления платежа
+
 import asyncio
 from aiogram import Router, F, types
 from aiogram.filters import Command

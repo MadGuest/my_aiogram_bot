@@ -14,6 +14,14 @@ class SingleMessageDialog:
                               text: str="",
                               reply_markup: InlineKeyboardMarkup | None=None
                               ) -> None:
+        dialog_bot=message.bot
+
+        # if isinstance(message, Message) and message.text:
+        try:
+            await message.delete()
+        except:
+            pass
+        
         bot_message = await message.answer(text, reply_markup=reply_markup)
         await state.update_data(
             prev_message_id = bot_message.message_id,
