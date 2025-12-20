@@ -1,29 +1,35 @@
-import os
 import asyncio
 import logging
 
-from dotenv import load_dotenv
+# Импорты для создания бота
+from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
-from aiogram import Bot, Dispatcher, types, Router
-from aiogram.filters import Command
+# Хранилище для данных FSM
+from aiogram.fsm.storage.memory import MemoryStorage
+# Класс для планирования задач
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+# Загрузка переменных окружения из .env
+from decouple import config
 
 from handlers.start_command import router as cmd_start_router
+from handlers.add_payment import add_payment_router
 
-
+# Настройка логирования
 logging.basicConfig(level=logging.INFO)
-
-load_dotenv()
-tg_token = os.getenv("BOT_TOKEN")
-
-bot = Bot(token=tg_token)
-
-dp = Dispatcher()
+logger = logging.getLogger(__name__)
+# Инстанс бота
+bot = Bot(token=config("BOT_TOKEN"), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+# Инстанс диспетчера
+dp = Dispatcher(storage=MemoryStorage())
 
 
 
 
 async def main():
     dp.include_router(cmd_start_router)
+    dp.include_router(add_payment_router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
