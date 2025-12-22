@@ -29,6 +29,17 @@ async def add_payment_handler(message: types.Message, state: FSMContext):
 
 @add_payment_router.message(Payment.name)
 async def capture_payment_name(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    await message.bot.edit_message_text(
+        chat_id=message.chat.id,
+        message_id=data.get("prev_message_id"),
+        text= "Категория платежа:"
+    )
+    await message.bot.delete_message(chat_id=message.chat.id,
+                                     message_id=message.message_id
+                                     )
+
+
     await state.update_data(name=message.text)
     await smd.next_step(message, state, text="Категория:")
     await state.set_state(Payment.category)   
