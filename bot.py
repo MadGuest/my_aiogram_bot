@@ -11,7 +11,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 # Класс для планирования задач
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # Загрузка переменных окружения из .env
-from decouple import config
+from config import BOT_TOKEN
 
 from handlers.start_command import router as cmd_start_router
 from handlers.add_payment import add_payment_router
@@ -21,7 +21,7 @@ from handlers.numeric_input import router as numeric_text_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # Инстанс бота
-bot = Bot(token=config("BOT_TOKEN"), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 # Инстанс диспетчера
 dp = Dispatcher(storage=MemoryStorage())
 
