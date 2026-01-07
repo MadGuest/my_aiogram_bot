@@ -16,19 +16,21 @@ from config import BOT_TOKEN
 from handlers.start_command import router as cmd_start_router
 from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
+from database import init_database
+
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-# Инстанс бота
-bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-# Инстанс диспетчера
-dp = Dispatcher(storage=MemoryStorage())
-
-
-
+# Инициализация БД
 
 async def main():
+    await init_database()
+    logger.info("Database initialized")
+    # Инстанс бота
+    bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    # Инстанс диспетчера
+    dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(cmd_start_router)
     dp.include_router(numeric_text_router)
     dp.include_router(add_payment_router)
