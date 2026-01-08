@@ -15,8 +15,7 @@ async def numeric_input_handler(message: Message, number: Decimal):
 
 
 @router.callback_query(ActionsCallbackFactory.filter(F.action == "income"))
-async def add_income(callback: CallbackQuery):
-    
+async def add_income(callback: CallbackQuery):    
     await callback.message.edit_text("Обработчик для добавления прихода")
     await callback.answer()
 
