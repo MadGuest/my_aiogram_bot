@@ -1,0 +1,9 @@
+# database/__init__.py
+from .db_old import db
+
+async def init_database():
+    """Инициализация базы данных при старте"""
+    await db_old.init_db()
+
+# Экспортируем объект БД для использования в других модулях
+__all__ = ['db_old', 'init_database']

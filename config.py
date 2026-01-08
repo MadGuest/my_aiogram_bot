@@ -2,12 +2,13 @@
 import os
 from pathlib import Path
 from decouple import config, Csv
+from database.db_dummy import Database
 
 # Определяем корневую директорию проекта
 BASE_DIR = Path(__file__).resolve().parent
 
 # Загружаем конфигурацию из .env
-DATABASE_PATH = config('DATABASE_PATH', default='data/database.db')
+DATABASE_PATH = config('DATABASE_PATH', default='data/dummy.db')
 BOT_TOKEN = config('BOT_TOKEN')
 
 # Формируем абсолютный путь к БД
@@ -23,6 +24,4 @@ DATABASE_DIR.mkdir(parents=True, exist_ok=True)
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не указан в .env файле!")
 
-# Можно добавить вывод в лог для отладки
-print(f"[CONFIG] База данных: {DATABASE_PATH}")
-print(f"[CONFIG] Директория БД создана: {DATABASE_DIR.exists()}")
+db = Database(DATABASE_PATH)

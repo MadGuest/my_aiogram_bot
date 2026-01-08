@@ -11,22 +11,23 @@ from aiogram.fsm.storage.memory import MemoryStorage
 # Класс для планирования задач
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # Загрузка переменных окружения из .env
-from config import BOT_TOKEN
+from config import BOT_TOKEN, db
 
 from handlers.start_command import router as cmd_start_router
 from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
-from database import init_database
+
 
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-# Инициализация БД
+
 
 async def main():
-    await init_database()
-    logger.info("Database initialized")
+    
+    await db.create_tables()
+    print("База данных готова")
     # Инстанс бота
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     # Инстанс диспетчера
