@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 async def main():
     
     await db.create_tables()
-    print("База данных готова")
     # Инстанс бота
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     # Инстанс диспетчера

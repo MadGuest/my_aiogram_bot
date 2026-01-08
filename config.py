@@ -2,7 +2,10 @@
 import os
 from pathlib import Path
 from decouple import config, Csv
-from database.db_dummy import Database
+from database.db import Database
+
+import logging
+logger = logging.getLogger(__name__)
 
 # Определяем корневую директорию проекта
 BASE_DIR = Path(__file__).resolve().parent

@@ -1,6 +1,9 @@
 import sqlite3
 import aiosqlite
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Database:
     def __init__(self, db_path: str):
@@ -27,7 +30,7 @@ class Database:
                 )
             ''')
             await db.commit()
-            print("Таблицы созданы")
+            logger.info("Таблицы созданы")
 
     async def add_user(self, user_id: int, username: str, full_name: str):
         """Добавление пользователя"""
@@ -40,7 +43,7 @@ class Database:
                 await db.commit()
                 return True
             except Exception as e:
-                print(f"Ошибка добавления пользователя: {e}")
+                logger.info(f"Ошибка добавления пользователя: {e}")
                 return False
 
     async def get_user(self, user_id: int):
