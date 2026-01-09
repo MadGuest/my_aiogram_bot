@@ -15,7 +15,7 @@ async def numeric_input_handler(message: Message, number: Decimal, state: FSMCon
     amount =number
     await state.update_data(amount=amount)  # Сохраняем сумму
     await message.delete()
-    await message.answer(f"Добавить операцию {number}", reply_markup=get_actions_kb())
+    await message.answer(f"Добавить операцию на сумму: {number}", reply_markup=get_actions_kb())
 
 
 
