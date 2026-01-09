@@ -12,6 +12,8 @@ from keyboards.inline import get_actions_kb, ActionsCallbackFactory
 
 router = Router()
 
+# Когда пользователь вводит сумму (любое число) бот показывает клавиатуру с действиями
+# Приход/Расход/Перевод
 @router.message(F.text, StateFilter(None),NumberFilter())
 async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
     amount =number

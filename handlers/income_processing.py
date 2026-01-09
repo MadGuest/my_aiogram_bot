@@ -1,3 +1,5 @@
+"""Модуль для диалога добавления поступления ДС"""
+
 import asyncio
 from aiogram import Router, F, types
 from aiogram.filters import StateFilter
@@ -8,6 +10,7 @@ from aiogram.utils.chat_action import ChatActionSender
 from decimal import Decimal
 from keyboards.inline import get_actions_kb, ActionsCallbackFactory
 from .dialog_states import TransactionStates as ts
+
 
 # Функция для подготовки текста сообщения
 # В будущем имеет смысл сделать ее методом класса Transaction
@@ -22,57 +25,66 @@ def format_message(**kwargs):
 """
     return template
 
+
 router = Router()
 
-# Хендлер для коллбэка кнопки "Приход"
+
+# Ловим нажатие кнопки Приход в меню сохраняем сумму и запрашиваем категорию
 @router.callback_query(ActionsCallbackFactory.filter(F.action == "income"))
 async def add_income(callback: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    message_content = format_message(amount=data.get('amount'),
-                                     step_message='Введите категорию:'
-                                     )
-    await callback.message.edit_text(message_content)
+    data = await state.get_data() # ПОлучаем сохраненные данные, чтобы вытащить сумму
+    message_content = format_message(
+        amount=data.get("amount"), step_message="Введите категорию:"
+    )
+    await callback.message.edit_text(message_content) # Изменяем сообщение
+    # Запоминаем ID сообщения
     await state.update_data(initial_message_id=callback.message.message_id)
     await callback.answer()
+    # Устанавливаем состояние для запроса категории
     await state.set_state(ts.category)
 
+
+# Ловим и сохраняем категорию, запрашиваем описание
 @router.message(F.text, ts.category)
 async def capture_income_category(message: types.Message, state: FSMContext):
     await state.update_data(category=message.text)
     data = await state.get_data()
-    print(f'{message.message_id} - {message.text}')
+    print(f"{message.message_id} - {message.text}")
     await message.delete()
-    print(message.message_id, 'is deleted')
-    message_content = format_message(amount=data.get('amount'),
-                                    category=data.get('category'),
-                                    step_message='Введите описание:'
-                                    )
+    print(message.message_id, "is deleted")
+    message_content = format_message(
+        amount=data.get("amount"),
+        category=data.get("category"),
+        step_message="Введите описание:",
+    )
     async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
         await asyncio.sleep(2)
         await message.bot.edit_message_text(
-        chat_id=message.chat.id,
-        message_id=data.get('initial_message_id'),  # ID предыдущего сообщения
-        text=message_content
+            chat_id=message.chat.id,
+            message_id=data.get("initial_message_id"),  # ID начального сообщения
+            text=message_content,
         )
     await state.set_state(ts.description)
 
 
+# Ловим и сохраняем описание и ...
 @router.message(F.text, ts.description)
 async def capture_income_description(message: types.Message, state: FSMContext):
     await state.update_data(description=message.text)
     data = await state.get_data()
-    print(f'{message.message_id} - {message.text}')
+    print(f"{message.message_id} - {message.text}")
     await message.delete()
-    print(message.message_id, 'is deleted')
-    message_content = format_message(amount=data.get('amount'),
-                                    category=data.get('category'),
-                                    description=data.get('description'),
-                                    )
+    print(message.message_id, "is deleted")
+    message_content = format_message(
+        amount=data.get("amount"),
+        category=data.get("category"),
+        description=data.get("description"),
+    )
     async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
         await asyncio.sleep(2)
         await message.bot.edit_message_text(
-        chat_id=message.chat.id,
-        message_id=data.get('initial_message_id'),
-        text=message_content
+            chat_id=message.chat.id,
+            message_id=data.get("initial_message_id"),
+            text=message_content,
         )
     await state.set_state(ts.finish)
