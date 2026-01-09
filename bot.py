@@ -22,7 +22,7 @@ from handlers.income_processing import router as income_processing_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # Инстанс бота
-bot = Bot(token=config("BOT_TOKEN"), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 # Инстанс диспетчера
 dp = Dispatcher(storage=MemoryStorage())
 
