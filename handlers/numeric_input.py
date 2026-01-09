@@ -2,15 +2,20 @@ from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.state import State
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from decimal import Decimal
 # from filters.numeric_input_filter import PositiveNumberFilter, NegativeNumberFilter
 from filters.numeric_input_filter import NumberFilter
 from keyboards.inline import get_actions_kb, ActionsCallbackFactory
 
+
 router = Router()
 
 @router.message(F.text, StateFilter(None),NumberFilter())
+async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
+    amount =number
+    await state.update_data(amount=amount)  # Сохраняем сумму
 async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
     amount =number
     await state.update_data(amount=amount)  # Сохраняем сумму
