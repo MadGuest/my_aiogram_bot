@@ -16,6 +16,7 @@ from decouple import config
 from handlers.start_command import router as cmd_start_router
 from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
+from handlers.income_processing import router as income_processing_router
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -32,6 +33,7 @@ async def main():
     dp.include_router(cmd_start_router)
     dp.include_router(numeric_text_router)
     dp.include_router(add_payment_router)
+    dp.include_router(income_processing_router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

@@ -1,23 +1,24 @@
 from aiogram import Router, F
 from aiogram.filters import StateFilter
 from aiogram.fsm.state import State
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from decimal import Decimal
 # from filters.numeric_input_filter import PositiveNumberFilter, NegativeNumberFilter
 from filters.numeric_input_filter import NumberFilter
 from keyboards.inline import get_actions_kb, ActionsCallbackFactory
+
 router = Router()
 
 @router.message(F.text, StateFilter(None),NumberFilter())
-async def numeric_input_handler(message: Message, number: Decimal):
+async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
+    amount =number
+    await state.update_data(amount=amount)  # Сохраняем сумму
     await message.delete()
-    await message.answer("Добавить операцию", reply_markup=get_actions_kb())
+    await message.answer(f"Добавить операцию {number}", reply_markup=get_actions_kb())
 
 
-@router.callback_query(ActionsCallbackFactory.filter(F.action == "income"))
-async def add_income(callback: CallbackQuery):    
-    await callback.message.edit_text("Обработчик для добавления прихода")
-    await callback.answer()
+
 
 @router.callback_query(ActionsCallbackFactory.filter(F.action == "outcome"))
 async def add_outcome(callback: CallbackQuery):
