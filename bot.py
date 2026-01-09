@@ -26,9 +26,6 @@ bot = Bot(token=config("BOT_TOKEN"), default=DefaultBotProperties(parse_mode=Par
 # Инстанс диспетчера
 dp = Dispatcher(storage=MemoryStorage())
 
-
-
-
 async def main():
     dp.include_router(cmd_start_router)
     dp.include_router(numeric_text_router)

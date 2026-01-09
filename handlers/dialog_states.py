@@ -1,5 +1,10 @@
 from aiogram.fsm.state import State, StatesGroup
 
+class ActionStates(StatesGroup):
+    income = State()
+    outcome = State()
+    transfer = State()
+
 class PaymentStates(StatesGroup):
     name = State() # Описание/примечание
     category = State() # Категория
@@ -7,5 +12,6 @@ class PaymentStates(StatesGroup):
 
 
 class TransactionStates(StatesGroup):
-    name = State()
+    description = State()
     category = State()
+    finish = State()
