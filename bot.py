@@ -11,7 +11,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 # Класс для планирования задач
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # Загрузка переменных окружения из .env
-from decouple import config
+from config import BOT_TOKEN, db
 
 from handlers.start_command import router as cmd_start_router
 from handlers.add_payment import add_payment_router
@@ -27,6 +27,12 @@ bot = Bot(token=config("BOT_TOKEN"), default=DefaultBotProperties(parse_mode=Par
 dp = Dispatcher(storage=MemoryStorage())
 
 async def main():
+    
+    await db.create_tables()
+    # Инстанс бота
+    bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    # Инстанс диспетчера
+    dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(cmd_start_router)
     dp.include_router(numeric_text_router)
     dp.include_router(add_payment_router)
