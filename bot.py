@@ -18,6 +18,7 @@ from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
 from handlers.income_processing import router as income_processing_router
 from handlers.categories_processing import router as categories_processing_router
+# from handlers.test_categories_router import router as categories_processing_router
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)

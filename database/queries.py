@@ -26,9 +26,35 @@ create_categories_table = '''
                 CREATE TABLE IF NOT EXISTS categories (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    type TEXT CHECK(type IN ('income', 'expense', 'transfer')),
-                    is_predefined BOOLEAN DEFAULT 0,
+                    type TEXT CHECK(type IN ('income', 'expense')),
                     emoji TEXT DEFAULT '',
                     UNIQUE(name, type)
                 )
             '''
+
+category_name_unique = '''
+                CREATE TRIGGER IF NOT EXISTS ensure_category_name_unique
+                BEFORE INSERT ON categories
+                BEGIN
+                    SELECT RAISE(ABORT, 'Category name already exists with any type')
+                    WHERE EXISTS (
+                        SELECT 1 FROM categories 
+                        WHERE name = NEW.name
+                        LIMIT 1
+                    );
+                END;
+        '''
+
+category_name_unique_update = '''
+            CREATE TRIGGER IF NOT EXISTS ensure_category_name_unique_update
+            BEFORE UPDATE ON categories
+            BEGIN
+                SELECT RAISE(ABORT, 'Category name already exists with any type')
+                WHERE EXISTS (
+                    SELECT 1 FROM categories 
+                    WHERE name = NEW.name 
+                    AND id != NEW.id
+                    LIMIT 1
+                );
+            END;
+        '''

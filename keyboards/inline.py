@@ -15,3 +15,16 @@ def get_actions_kb():
     builder.button(text="🧾Платёж", callback_data=ActionsCallbackFactory(action="payment"))
     builder.adjust(1)
     return builder.as_markup()
+
+
+
+def get_categories_keyboard():
+    buttons = [
+        [
+            InlineKeyboardButton(text="Приход", callback_data="cat_income"),
+            InlineKeyboardButton(text="Расход", callback_data="cat_expense")
+        ],
+        [InlineKeyboardButton(text="Сохранить", callback_data="cat_finish")]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

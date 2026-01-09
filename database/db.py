@@ -2,7 +2,11 @@ import sqlite3
 import aiosqlite
 import logging
 from typing import Optional
-from .queries import create_accounts_table, create_categories_table, create_transactions_table
+from .queries import (create_accounts_table,
+                      create_categories_table,
+                      create_transactions_table,
+                      category_name_unique,
+                      category_name_unique_update)
 from contextlib import asynccontextmanager
 
 logger = logging.getLogger(__name__)
@@ -28,6 +32,8 @@ class Database:
                 await conn.execute(create_accounts_table)
                 logger.debug("Таблица 'accounts' проверена/создана")
                 await conn.execute(create_categories_table)
+                await conn.execute(category_name_unique)
+                await conn.execute(category_name_unique_update)
                 logger.debug("Таблица 'categories' проверена/создана")
                 await conn.execute(create_transactions_table)
                 await conn.commit()
@@ -37,4 +43,47 @@ class Database:
         except Exception as e:
             logger.error(f"Ошибка при создании таблиц: {e}", exc_info=True)
             raise
+
+    async def get_categories_list(self):
+        async with self._connection() as conn:
+            cursor = await conn.execute('SELECT * FROM categories')
+            categories = await cursor.fetchall()
+            return categories
+
+    async def get_category_by_id(self, id):
+        async with self._connection() as conn:
+            cursor = await conn.execute("SELECT name, type FROM categories WHERE id = ?", (id,))
+            category = await cursor.fetchone()
+            return category
+        
+    async def get_category_name_by_id(self, id):
+        async with self._connection() as conn:
+            cursor = await conn.execute("SELECT name FROM categories WHERE id = ?", (id,))
+            category = await cursor.fetchone()
+            return category
+        
+    async def delete_category_by_id(self, id):
+        async with self._connection() as conn:
+            cursor = await conn.execute("DELETE FROM categories WHERE id = ?", (id,))
+            return cursor   
+
+
+
+    async def add_category(self, name: str, type: str):
+        """Добавление категории"""
+        async with self._connection() as conn:
+            try:
+                await conn.execute(
+                    'INSERT OR IGNORE INTO categories (name, type) VALUES (?, ?)',
+                    (name, type)
+                )
+                await conn.commit()
+                return True
+            except Exception as e:
+                logger.info(f"Ошибка добавления категории: {e}")
+                return False
+            
+
+
+
 
