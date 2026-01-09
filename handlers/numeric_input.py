@@ -16,9 +16,6 @@ router = Router()
 async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
     amount =number
     await state.update_data(amount=amount)  # Сохраняем сумму
-async def numeric_input_handler(message: Message, number: Decimal, state: FSMContext):
-    amount =number
-    await state.update_data(amount=amount)  # Сохраняем сумму
     await message.delete()
     await message.answer(f"Добавить операцию на сумму: {number}", reply_markup=get_actions_kb())
 
