@@ -1,6 +1,8 @@
 import sqlite3
 import aiosqlite
 import logging
+import traceback
+from functools import wraps
 from typing import Optional
 from .queries import (create_accounts_table,
                       create_categories_table,
@@ -10,6 +12,19 @@ from .queries import (create_accounts_table,
 from contextlib import asynccontextmanager
 
 logger = logging.getLogger(__name__)
+
+
+def safe_db_method(fallback_value=None):
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(self, *args, **kwargs):
+            try:
+                return await func(self, *args, **kwargs)
+            except Exception as e:
+                logger.error(f"Database error in {func.__name__}: {e}\n{traceback.format_exc()}")
+                return fallback_value
+        return wrapper
+    return decorator
 
 class Database:
     def __init__(self, db_path: str):
@@ -68,7 +83,6 @@ class Database:
             return cursor   
 
 
-
     async def add_category(self, name: str, type: str):
         """Добавление категории"""
         async with self._connection() as conn:
@@ -83,6 +97,19 @@ class Database:
                 logger.info(f"Ошибка добавления категории: {e}")
                 return False
             
+    async def update_name(self, id: int, new_name: str):
+        """Обновление названия категории"""
+        async with  self._connection() as conn:
+            try:
+                await conn.execute(
+                    'UPDATE categories SET name = ? WHERE id = ?',
+                    (new_name, id)
+                )
+                await conn.commit()
+                return True
+            except Exception as e:
+                logger.info(f"Ошибка изменения категории: {e}")
+                return False           
 
 
 

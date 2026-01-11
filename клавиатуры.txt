@@ -16,22 +16,6 @@ from aiogram.utils.chat_action import ChatActionSender
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from config import db
 
-from keyboards.inline import (
-    categories_list_keyboard,
-    category_back_to_edit_keyboard,
-    category_delete_confirm_keyboard,
-    category_edit_keyboard,
-    category_types_keyboard,
-    category_add_keyboard,
-    category_back_to_add_keyboard,
-    category_back_to_list_keyboard,
-    category_rename_keyboard,
-    category_details_keyboard
-)
-
-
-CATEGORY_TYPE_TEXT = {"income": "💰 Доход", "expense": "🛒 Расход"}
-
 logger = logging.getLogger(__name__)
 
 router = Router()
@@ -51,6 +35,26 @@ class Category(StatesGroup):
     finish = State()
     finish_waiting_name = State()
 
+
+async def build_categories_keyboard() -> list:
+    keyboard = []
+    categories = await db.get_categories_list()
+    if categories:
+        for category_id, category_name, category_type, emoji in categories:
+            category_type_text = "💰" if category_type == "income" else "🛒"
+            button = [
+                InlineKeyboardButton(
+                    text=f"{category_type_text} {category_name}",
+                    callback_data=CategoriesCallback(
+                        action="show", id=category_id
+                    ).pack(),
+                )
+            ]
+            keyboard.append(button)
+        return keyboard
+    return None
+
+
 async def show_categories_list(event: Message | CallbackQuery):
     if isinstance(event, Message):
         chat_id = event.chat.id
@@ -66,15 +70,39 @@ async def show_categories_list(event: Message | CallbackQuery):
 
     message_content = "<b>📂 Список категорий пуст</b>\n"
 
-    footer_keyboard = category_add_keyboard()
+    keyboard = []
 
-    if not categories_list:
-        keyboard = footer_keyboard
-    else:
-        keyboard = categories_list_keyboard(categories_list)
-        keyboard.attach(footer_keyboard)
+    if categories_list:
+        message_content = "<b>📂 Категории:</b>\n\n"
+        for category_id, category_name, category_type, emoji in categories_list:
+            category_type_text = "💰" if category_type == "income" else "🛒"
+            button = [
+                InlineKeyboardButton(
+                    text=f"{category_type_text} {category_name}",
+                    callback_data=CategoriesCallback(
+                        action="select", id=category_id
+                    ).pack(),
+                )
+            ]
+            keyboard.append(button)
 
-    reply_markup = keyboard.as_markup()
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="➕ Добавить",
+                callback_data=CategoriesCallback(action="add").pack(),
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(action="cancel").pack(),
+            )
+        ]
+    )
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     # Обработка в зависимости от типа события
     if is_message:
@@ -93,19 +121,6 @@ async def show_categories_list(event: Message | CallbackQuery):
         )
         # Отвечаем на callback, чтобы убрать часики
         await event.answer()
-
-
-def format_category_info(
-    category_name: str, category_type: str, category_id: int, action_message: str
-) -> str:
-    """Форматирование информации о категории"""
-    type_text = CATEGORY_TYPE_TEXT.get(category_type, category_type)
-    return (
-        f"<b>{category_name}</b>\n\n"
-        f"Тип: {type_text}\n"
-        f"ID: {category_id}\n\n"
-        f"<b>⬇️ {action_message} ⬇️</b>"
-    )
 
 
 @router.message(
@@ -130,6 +145,7 @@ async def handle_cancel_category(callback: CallbackQuery, state: FSMContext):
 @router.callback_query(CategoriesCallback.filter(F.action == "back_to_list"))
 async def categories_menu(event: Message | CallbackQuery, state: FSMContext):
     await show_categories_list(event)
+
     await state.set_state(Category.waiting_type)
 
 
@@ -138,10 +154,51 @@ async def categories_menu(event: Message | CallbackQuery, state: FSMContext):
 # @router.callback_query(Category.waiting_type)
 async def handle_add_category(callback: CallbackQuery, state: FSMContext):
     logger.info("Попали в обработчик добавления категории")
+    keyboard = []
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="💰 Доход",
+                callback_data=CategoriesCallback(
+                    action="type",
+                    type="income",
+                ).pack(),
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="🛒 Расход",
+                callback_data=CategoriesCallback(
+                    action="type",
+                    type="expense",
+                ).pack(),
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад к списку",
+                callback_data=CategoriesCallback(
+                    action="back_to_list",
+                ).pack(),
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(
+                    action="cancel",
+                ).pack(),
+            )
+        ]
+    )
 
-    keyboard = category_types_keyboard()
-
-    reply_markup = keyboard.as_markup()
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
     await callback.message.edit_text(
         "<b>✚ Новая категория</b>\n\n⬇️ Выберите тип ⬇️",
@@ -161,11 +218,31 @@ async def capture_category_type(
 ):
     logger.info("Попали в обработчик типа категории")
     category_type = callback_data.type
-    keyboard = category_back_to_add_keyboard()
+    keyboard = []
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад",
+                callback_data=CategoriesCallback(
+                    action="add",
+                ).pack(),
+            )
+        ]
+    )
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(
+                    action="cancel",
+                ).pack(),
+            )
+        ]
+    )
 
-    reply_markup = keyboard.as_markup()
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
     await state.update_data(type=category_type)
-    category_type = CATEGORY_TYPE_TEXT.get(category_type)
+    category_type = "💰 Доход" if category_type == "income" else "🛒 Расход"
     await callback.message.edit_text(
         text=f"<b>✚ Новая категория</b>\n\n⭐ Тип: {category_type}\n⬇️ Введите название ⬇️",
         reply_markup=reply_markup,
@@ -183,10 +260,25 @@ async def capture_category_name(message: Message, state: FSMContext):
     initial_message = data.get("initial_message_id")
 
     # Заменяем текст типа категории на русский с эмодзи
-    category_type_text = CATEGORY_TYPE_TEXT.get(category_type)
+    category_type_text = "💰 Доход" if category_type == "income" else "🛒 Расход"
 
-    keyboard = category_back_to_list_keyboard()
-    reply_markup = keyboard.as_markup()
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад к списку",
+                callback_data=CategoriesCallback(action="back_to_list").pack(),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(
+                    action="cancel",
+                ).pack(),
+            )
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
     # Сохраняем категорию в БД
     async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):
         save = await db.add_category(name=category_name, type=category_type)
@@ -217,17 +309,54 @@ async def handle_category_selection(
     if category:
         category_name, category_type = category
 
-        keyboard = category_details_keyboard(category_id, category_name, category_type)
-        reply_markup = keyboard.as_markup()
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    text="🗑️ Удалить",
+                    callback_data=CategoriesCallback(
+                        action="delete", id=category_id
+                    ).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="✏️ Редактировать",
+                    callback_data=CategoriesCallback(
+                        action="edit",
+                        name=category_name,
+                        type=category_type,
+                        id=category_id,
+                    ).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="↩️ Назад к списку",
+                    callback_data=CategoriesCallback(
+                        action="back_to_list",
+                        id=category_id,
+                    ).pack(),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="❌ Отмена",
+                    callback_data=CategoriesCallback(
+                        action="cancel",
+                    ).pack(),
+                )
+            ],
+        ]
 
-        answer_content = format_category_info(
-            category_name, category_type, category_id, "Выберите действие"
-        )
+        category_type_text = "💰 Доход" if category_type == "income" else "🛒 Расход"
 
         await callback.message.edit_text(
-            text=answer_content,
+            text=f"<b>{category_name}</b>\n\n"
+            f"Тип: {category_type_text}\n"
+            f"ID: {category_id}\n\n"
+            f"<b>⬇️ Выберите действие ⬇️</b>",
             parse_mode="HTML",
-            reply_markup=reply_markup
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
         )
 
     await callback.answer()
@@ -239,14 +368,28 @@ async def handle_category_delete_confirmation(
 ):
 
     logger.info("Попали в обработчик удаления категории")
-    logger.info(f"Выбрана категория: {callback_data}")
     category_id = callback_data.id
 
-    keyboard = category_delete_confirm_keyboard(category_id)
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="✅ Да, удалить",
+                callback_data=CategoriesCallback(
+                    action="confirm_delete", id=category_id
+                ).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="❌ Нет, отмена",
+                callback_data=CategoriesCallback(action="back_to_list").pack(),
+            )
+        ],
+    ]
 
     await callback.message.edit_text(
         text="⚠️ Вы уверены, что хотите удалить эту категорию?",
-        reply_markup=keyboard.as_markup(),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
     )
     await callback.answer()
 
@@ -283,20 +426,44 @@ async def handle_category_selection(
     category_id = callback_data.id
     category_name = callback_data.name
     category_type = callback_data.type
+    category_type_text = "💰 Доход" if category_type == "income" else "🛒 Расход"
 
-    logger.info(f"Попали в обработчик редактирования категории: id= {callback_data}")
+    logger.info(f"Попали в обработчик редактирования категории: id= {category_id}")
 
-    keyboard = category_edit_keyboard(category_id)
-
-    reply_markup = keyboard.as_markup()
-
-    answer_content = format_category_info(
-        category_name, category_type, category_id, "Выберите действие"
-    )
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="✏️ Переименовать",
+                id=category_id,
+                callback_data=CategoriesCallback(
+                    action="change_name", id=category_id
+                ).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад",
+                callback_data=CategoriesCallback(
+                    action="select", id=category_id
+                ).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(
+                    action="cancel",
+                ).pack(),
+            )
+        ],
+    ]
 
     await callback.message.edit_text(
-        text=answer_content,
-        reply_markup=reply_markup,
+        text=f"<b>{category_name}</b>\n\n"
+        f"Тип: {category_type_text}\n"
+        f"ID: {category_id}\n\n"
+        f"<b>⬇️ Выберите действие ⬇️</b>",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
     )
     await callback.answer()
 
@@ -311,17 +478,32 @@ async def handle_cnange_name(
     category_id = callback_data.id
     category_name, category_type = await db.get_category_by_id(category_id)
 
-    keyboard = category_rename_keyboard(category_id)
-    reply_markup = keyboard.as_markup()
+    category_type_text = "💰 Доход" if category_type == "income" else "🛒 Расход"
 
-    answer_content = format_category_info(
-        category_name, category_type, category_id, "Введите новое название"
-    )
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="↩️ Назад",
+                callback_data=CategoriesCallback(action="edit", id=category_id).pack(),
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="❌ Отмена",
+                callback_data=CategoriesCallback(
+                    action="cancel",
+                ).pack(),
+            )
+        ],
+    ]
 
     # А тут мы должны спросить новое название
     await callback.message.edit_text(
-        text=answer_content,
-        reply_markup=reply_markup,
+        text=f"<b>{category_name}</b>\n\n"
+        f"Тип: {category_type_text}\n"
+        f"ID: {category_id}\n\n"
+        f"<b>⬇️ Введите новое название: ⬇️</b>",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyboard),
     )
     await state.update_data(initial_message_id=callback.message.message_id)
     await state.update_data(category_id=category_id)

@@ -8,8 +8,10 @@ from aiogram.enums import ParseMode
 
 # Хранилище для данных FSM
 from aiogram.fsm.storage.memory import MemoryStorage
+
 # Класс для планирования задач
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 # Загрузка переменных окружения из .env
 from config import BOT_TOKEN, db
 
@@ -18,6 +20,7 @@ from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
 from handlers.income_processing import router as income_processing_router
 from handlers.categories_processing import router as categories_processing_router
+
 # from handlers.test_categories_router import router as categories_processing_router
 
 # Настройка логирования
@@ -28,8 +31,9 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTM
 # Инстанс диспетчера
 dp = Dispatcher(storage=MemoryStorage())
 
+
 async def main():
-    
+
     await db.create_tables()
     # Инстанс бота
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -46,6 +50,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-
