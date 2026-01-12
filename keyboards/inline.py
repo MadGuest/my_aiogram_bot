@@ -38,7 +38,7 @@ def get_actions_kb():
 def categories_list_keyboard(categories: List[tuple]) -> InlineKeyboardBuilder:
     # Строит из списка категорий клавиатуру
     builder = InlineKeyboardBuilder()
-    for category_id, category_name, category_type, _ in categories:
+    for category_id, category_name, category_type, *_ in categories:
         # Собираем текст для кнопки
         category_type_text = EMOJI_MAPPING.get(category_type)
         # В callback_data передаем только действие и id
