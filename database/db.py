@@ -61,7 +61,7 @@ class Database:
 
     async def get_categories_list(self):
         async with self._connection() as conn:
-            cursor = await conn.execute('SELECT * FROM categories')
+            cursor = await conn.execute('SELECT * FROM categories WHERE is_active = 1')
             categories = await cursor.fetchall()
             return categories
 
@@ -80,6 +80,14 @@ class Database:
     async def delete_category_by_id(self, id):
         async with self._connection() as conn:
             cursor = await conn.execute("DELETE FROM categories WHERE id = ?", (id,))
+            return cursor   
+        
+    async def disable_category_by_id(self, id):
+        async with self._connection() as conn:
+            cursor = await conn.execute(
+                'UPDATE categories SET is_active = 0 WHERE id = ?',
+                  (id,)
+                  )
             return cursor   
 
 

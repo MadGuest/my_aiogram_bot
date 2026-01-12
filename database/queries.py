@@ -27,7 +27,8 @@ create_categories_table = '''
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     type TEXT CHECK(type IN ('income', 'expense')),
-                    emoji TEXT DEFAULT '',
+                    description TEXT DEFAULT '',
+                    is_active BOOLEAN DEFAULT 1,
                     UNIQUE(name, type)
                 )
             '''
