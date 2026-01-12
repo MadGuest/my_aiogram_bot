@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.filters.callback_data import CallbackData
-from typing import Optional
+from typing import Optional, List
 
 EMOJI_MAPPING = {"income": "💰", "expense": "🛒"}
 
@@ -12,10 +12,9 @@ class ActionsCallbackFactory(CallbackData, prefix="act"):
 
 
 class CategoriesCallbackFactory(CallbackData, prefix="cats"):
-    id: int | None = None
+    id: Optional[int]| None = None
     type: str | None = None
-    name: str | None = None
-    action: str | None = None
+    action: str
 
 
 def get_actions_kb():
@@ -36,10 +35,13 @@ def get_actions_kb():
     return builder.as_markup()
 
 
-def categories_list_keyboard(categories: list) -> InlineKeyboardBuilder:
+def categories_list_keyboard(categories: List[tuple]) -> InlineKeyboardBuilder:
+    # Строит из списка категорий клавиатуру
     builder = InlineKeyboardBuilder()
-    for category_id, category_name, category_type, emoji in categories:
+    for category_id, category_name, category_type, _ in categories:
+        # Собираем текст для кнопки
         category_type_text = EMOJI_MAPPING.get(category_type)
+        # В callback_data передаем только действие и id
         builder.button(
             text=f"{category_type_text} {category_name}",
             callback_data=CategoriesCallbackFactory(
@@ -48,6 +50,7 @@ def categories_list_keyboard(categories: list) -> InlineKeyboardBuilder:
             ),
         )
     builder.adjust(2)
+
     return builder
 
 
@@ -63,8 +66,6 @@ def category_types_keyboard() -> InlineKeyboardBuilder:
         callback_data=CategoriesCallbackFactory(action="type", type="expense"),
     )
 
-    builder.adjust(2)
-
     builder.button(
         text="↩️ Назад к списку",
         callback_data=CategoriesCallbackFactory(
@@ -79,7 +80,7 @@ def category_types_keyboard() -> InlineKeyboardBuilder:
         ),
     )
 
-    builder.adjust(2,1,1)
+    builder.adjust(2, 1, 1)
     return builder
 
 
@@ -87,10 +88,7 @@ def category_add_keyboard() -> InlineKeyboardBuilder:
 
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="➕ Добавить",
-        callback_data=CategoriesCallbackFactory(
-            action="add"
-            )
+        text="➕ Добавить", callback_data=CategoriesCallbackFactory(action="add")
     )
 
     builder.button(
@@ -105,61 +103,69 @@ def category_add_keyboard() -> InlineKeyboardBuilder:
     return builder
 
 
-def category_details_keyboard(category_id, category_name, category_type) -> InlineKeyboardBuilder:
-        
-        builder = InlineKeyboardBuilder()
-        builder.button(
-                    text="🗑️ Удалить",
-                    callback_data=CategoriesCallbackFactory(
-                        action="delete", id=category_id
-                    ),
-                )
+def category_back_to_add_keyboard() -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="↩️ Назад",
+        callback_data=CategoriesCallbackFactory(
+            action="add",
+        ),
+    )
 
-        builder.button(
-                    text="✏️ Редактировать",
-                    callback_data=CategoriesCallbackFactory(
-                        action="edit",
-                        name=category_name,
-                        type=category_type,
-                        id=category_id,
-                    )
-                )
-        builder.button(
-                    text="↩️ Назад к списку",
-                    callback_data=CategoriesCallbackFactory(
-                        action="back_to_list",
-                        id=category_id,
-                    )
-        )
+    builder.button(
+        text="❌ Отмена",
+        callback_data=CategoriesCallbackFactory(
+            action="cancel",
+        ),
+    )
 
-        builder.button(
-                    text="❌ Отмена",
-                    callback_data=CategoriesCallbackFactory(
-                        action="cancel",
-                    ),
-                )
-        
-        builder.adjust(1)
-        
-        return builder
+    builder.adjust(1)
+
+    return builder
 
 
+def category_details_keyboard(category_id) -> InlineKeyboardBuilder:
 
-def category_rename_keyboard(
-        category_id: int,
-        category_name: str,
-        category_type: str
-        ) -> InlineKeyboardBuilder:
-    
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="🗑️ Удалить",
+        callback_data=CategoriesCallbackFactory(action="delete", id=category_id),
+    )
+
+    builder.button(
+        text="✏️ Редактировать",
+        callback_data=CategoriesCallbackFactory(
+            action="edit",
+            id=category_id,
+        ),
+    )
+    builder.button(
+        text="↩️ Назад к списку",
+        callback_data=CategoriesCallbackFactory(
+            action="back_to_list",
+            id=category_id,
+        ),
+    )
+
+    builder.button(
+        text="❌ Отмена",
+        callback_data=CategoriesCallbackFactory(
+            action="cancel",
+        ),
+    )
+
+    builder.adjust(1)
+
+    return builder
+
+
+def category_rename_keyboard(category_id: int) -> InlineKeyboardBuilder:
+
     builder = InlineKeyboardBuilder()
 
     builder.button(
         text="↩️ Назад",
-        callback_data=CategoriesCallbackFactory(
-            action="edit",
-            name=category_name,
-            type=category_type,
-            id=category_id),
+        callback_data=CategoriesCallbackFactory(action="edit", id=category_id),
     )
 
     builder.button(
@@ -204,31 +210,11 @@ def category_back_to_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     builder.button(
         text="❌ Отмена", callback_data=CategoriesCallbackFactory(action="cancel")
     )
-    
-    builder.adjust(1)
-
-    return builder
-
-
-def category_back_to_add_keyboard() -> InlineKeyboardBuilder:
-    builder = InlineKeyboardBuilder()
-    builder.button(
-        text="↩️ Назад",
-        callback_data=CategoriesCallbackFactory(
-            action="add",
-        ),
-    )
-
-    builder.button(
-        text="❌ Отмена",
-        callback_data=CategoriesCallbackFactory(
-            action="cancel",
-        ),
-    )
 
     builder.adjust(1)
 
     return builder
+
 
 def category_back_to_list_keyboard() -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
@@ -255,18 +241,12 @@ def category_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
     builder.button(
         text="✏️ Переименовать",
-                callback_data=CategoriesCallbackFactory(
-                    action="change_name",
-                    id=category_id
-                ),
+        callback_data=CategoriesCallbackFactory(action="rename", id=category_id),
     )
 
     builder.button(
         text="↩️ Назад",
-        callback_data=CategoriesCallbackFactory(
-            action="select",
-            id=category_id
-        ),
+        callback_data=CategoriesCallbackFactory(action="select", id=category_id),
     )
 
     builder.button(
@@ -279,5 +259,3 @@ def category_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     builder.adjust(1)
 
     return builder
-
-
