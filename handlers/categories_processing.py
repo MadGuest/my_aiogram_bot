@@ -143,6 +143,25 @@ def format_category_info(
         f"<b>⬇️ {action_message} ⬇️</b>"
     )
 
+# Формат сообщения диалога добавления категории
+def format_category_add_card(
+    category_name: str | None=None, category_type: str | None=None, action_message: str=""
+) -> str:
+    """Форматирование информации о категории"""
+    type_text = CATEGORY_TYPE_TEXT.get(category_type, category_type)
+
+    header = "<b>✚ Новая категория</b>\n\n"
+    type_string = "<b>⭕️Тип:\n</b>" if not category_type else f"✅Тип: {type_text}\n"
+    name_string = "<b>⭕️Название:\n</b>" if not category_name else f"✅Название: {category_name}\n"
+    text = (
+        f"{header}"
+        f"{type_string}"
+        f"{name_string}"
+        f"{action_message}"
+    )
+    return text
+
+
 
 # Хэндлер для подавления текста там, где нам надо ждать только нажатия на кнопку
 @router.message(
@@ -231,13 +250,17 @@ async def handle_add_category(callback: CallbackQuery, state: FSMContext):
     keyboard = category_types_keyboard()
     reply_markup = keyboard.as_markup()
 
+    message_content = format_category_add_card(
+        category_name=None,
+        category_type=None,
+        action_message="⬇️ Выберите тип ⬇️"
+    )
+
     await callback.message.edit_text(
-        text=f"<b>✚ Новая категория</b>\n\n"
-        f"<b>⭕️Тип:\n</b>"
-        f"⭕️Название: \n\n"
-        f"⬇️ Выберите тип ⬇️",
+        message_content,
         reply_markup=reply_markup,
     )
+
     # Запоминаем ID сообщения
     await state.update_data(initial_message_id=callback.message.message_id)
     # Устанавливаем состояние для следующего шага (Название)
@@ -278,17 +301,18 @@ async def capture_category_type(
     # Сохраняем тип для категории в state data
     await state.update_data(type=category_type)
 
-    # Получаем текст типа на русском для сообщения
-    category_type = CATEGORY_TYPE_TEXT.get(category_type)
-
     # На месте предыдущего сообщения показываем сообщение для шага ввода названия
+    message_content = format_category_add_card(
+        category_name= None,
+        category_type=category_type,
+        action_message="⬇️ Введите название ⬇️"
+    )
+
     await callback.message.edit_text(
-        text=f"<b>✚ Новая категория</b>\n\n"
-        f"✅ Тип: {category_type}\n"
-        f"⭕️ Название: \n\n"
-        f"⬇️ Введите название ⬇️",
+        message_content,
         reply_markup=reply_markup,
     )
+
     await state.set_state(Category.finish)
 
 
@@ -322,9 +346,6 @@ async def capture_category_name(message: Message, state: FSMContext):
     category_name = data.get("name")
     initial_message = data.get("initial_message_id")
 
-    # Заменяем текст типа категории на русский с эмодзи
-    category_type_text = CATEGORY_TYPE_TEXT.get(category_type)
-
     # Получаем клавиатуру с кнопками:
     # Назад к списку - вернуться в список категорий
     # Отмена - очистить чат
@@ -345,11 +366,15 @@ async def capture_category_name(message: Message, state: FSMContext):
         # Текст для статуса
         status = "Успех ✅" if save else "Ошибка ⭕️"
 
+
+        message_content = format_category_add_card(
+            category_name=category_name,
+            category_type=category_type,
+            action_message=f"Статус: {status}"
+            )
+
         await message.bot.edit_message_text(
-            text=f"<b>✚ Новая категория</b>\n\n"
-            f"✅ Тип: {category_type_text}\n"
-            f"✅ Название: {data.get('name')}\n"
-            f"Статус: {status}",
+            text=message_content,
             reply_markup=reply_markup,
             chat_id=message.chat.id,
             message_id=initial_message,
