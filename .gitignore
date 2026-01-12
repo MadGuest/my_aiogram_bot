@@ -254,3 +254,6 @@ tmp/
 
 # Sensitive data
 data/
+
+# Obsolete files
+obsolete/
