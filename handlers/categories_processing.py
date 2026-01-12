@@ -476,7 +476,7 @@ async def handle_delete_execution(
         category_name = await db.get_category_name_by_id(category_id)
 
         # Удаляем категорию
-        await db.delete_category_by_id(category_id)
+        await db.disable_category_by_id(category_id)
 
         # Название для сообщения
         deleted_name = category_name[0]
