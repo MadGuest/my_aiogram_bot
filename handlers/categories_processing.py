@@ -27,6 +27,7 @@ from keyboards.inline import (
     category_back_to_list_keyboard,
     category_rename_keyboard,
     category_details_keyboard,
+    category_add_another_keyboard
 )
 
 
@@ -327,7 +328,7 @@ async def capture_category_name(message: Message, state: FSMContext):
     # Получаем клавиатуру с кнопками:
     # Назад к списку - вернуться в список категорий
     # Отмена - очистить чат
-    keyboard = category_back_to_list_keyboard()
+    keyboard = category_add_another_keyboard()
     reply_markup = keyboard.as_markup()
 
     async with ChatActionSender.typing(bot=message.bot, chat_id=message.chat.id):

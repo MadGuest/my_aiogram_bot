@@ -216,8 +216,37 @@ def category_back_to_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     return builder
 
 
+def category_add_another_keyboard() -> InlineKeyboardBuilder:
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="➕ Добавить еще",
+        callback_data=CategoriesCallbackFactory(
+            action="add"
+            )
+    )
+
+    builder.button(
+        text="↩️ Назад к списку",
+        callback_data=CategoriesCallbackFactory(
+            action="back_to_list",
+        ),
+    )
+
+    builder.button(
+        text="❌ Выход",
+        callback_data=CategoriesCallbackFactory(
+            action="cancel",
+        ),
+    )
+
+    builder.adjust(1)
+
+    return builder
+
 def category_back_to_list_keyboard() -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
+
     builder.button(
         text="↩️ Назад к списку",
         callback_data=CategoriesCallbackFactory(
