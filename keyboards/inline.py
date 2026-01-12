@@ -74,7 +74,7 @@ def category_types_keyboard() -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -92,7 +92,7 @@ def category_add_keyboard() -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -113,7 +113,7 @@ def category_back_to_add_keyboard() -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -148,7 +148,7 @@ def category_details_keyboard(category_id) -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -169,7 +169,7 @@ def category_rename_keyboard(category_id: int) -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -208,7 +208,7 @@ def category_back_to_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена", callback_data=CategoriesCallbackFactory(action="cancel")
+        text="❌ Выход", callback_data=CategoriesCallbackFactory(action="cancel")
     )
 
     builder.adjust(1)
@@ -226,7 +226,7 @@ def category_back_to_list_keyboard() -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
@@ -250,7 +250,7 @@ def category_edit_keyboard(category_id) -> InlineKeyboardBuilder:
     )
 
     builder.button(
-        text="❌ Отмена",
+        text="❌ Выход",
         callback_data=CategoriesCallbackFactory(
             action="cancel",
         ),
