@@ -20,6 +20,7 @@ from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
 from handlers.income_processing import router as income_processing_router
 from handlers.categories_processing import router as categories_processing_router
+from handlers.unmatched import echo_router
 
 # from handlers.test_categories_router import router as categories_processing_router
 
@@ -44,6 +45,7 @@ async def main():
     dp.include_router(add_payment_router)
     dp.include_router(categories_processing_router)
     dp.include_router(income_processing_router)
+    dp.include_router(echo_router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
