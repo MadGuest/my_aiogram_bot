@@ -150,13 +150,13 @@ def format_category_add_card(
     """Форматирование информации о категории"""
     type_text = CATEGORY_TYPE_TEXT.get(category_type, category_type)
 
-    header = "<b>✚ Новая категория</b>\n\n"
-    type_string = "<b>⭕️Тип:\n</b>" if not category_type else f"✅Тип: {type_text}\n"
-    name_string = "<b>⭕️Название:\n</b>" if not category_name else f"✅Название: {category_name}\n"
+    header = "<b>✚ Новая категория</b>"
+    type_string = "<b>⭕️Тип:</b>" if not category_type else f"✅Тип: {type_text}"
+    name_string = "<b>⭕️Название:</b>" if not category_name else f"✅Название: {category_name}"
     text = (
-        f"{header}"
-        f"{type_string}"
-        f"{name_string}"
+        f"{header}\n\n"
+        f"{type_string}\n"
+        f"{name_string}\n\n"
         f"{action_message}"
     )
     return text
