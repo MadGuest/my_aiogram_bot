@@ -16,7 +16,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import BOT_TOKEN, db
 
 from handlers.start_command import router as cmd_start_router
-from handlers.add_payment import add_payment_router
 from handlers.numeric_input import router as numeric_text_router
 from handlers.income_processing import router as income_processing_router
 from handlers.categories_processing import router as categories_processing_router
@@ -42,7 +41,6 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(cmd_start_router)
     dp.include_router(numeric_text_router)
-    dp.include_router(add_payment_router)
     dp.include_router(categories_processing_router)
     dp.include_router(income_processing_router)
     dp.include_router(echo_router)
